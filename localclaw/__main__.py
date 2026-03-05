@@ -21,11 +21,19 @@ def print_banner(console: Console):
     console.print(Panel(banner, title="Welcome", border_style="blue"))
 
 
-def main():
+def run_cli():
+    """Run CLI mode"""
     parser = argparse.ArgumentParser(description="LocalClaw - Local AI Assistant")
     parser.add_argument("--config", "-c", help="Path to config file")
     parser.add_argument("--message", "-m", help="Single message mode")
+    parser.add_argument("--tui", "-t", action="store_true", help="Launch TUI mode")
     args = parser.parse_args()
+    
+    # Launch TUI if requested
+    if args.tui:
+        from localclaw.tui import run_tui
+        run_tui()
+        return
     
     console = Console()
     
@@ -92,6 +100,11 @@ def main():
             console.print("\n[dim]Interrupted. Type 'exit' to quit.[/dim]")
         except EOFError:
             break
+
+
+def main():
+    """Main entry point"""
+    run_cli()
 
 
 if __name__ == "__main__":
