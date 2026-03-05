@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  localclaw:
+    build: .
+    container_name: localclaw
+    volumes:
+      - ./workspace:/workspace
+      - ./config.yaml:/app/config.yaml:ro
+    environment:
+      - OLLAMA_HOST=http://host.docker.internal:11434
+    # For interactive mode
+    stdin_open: true
+    tty: true
+    command: python -m localclaw
+
+  # Optional: Run with Ollama in the same network
+  # Uncomment if you want to run Ollama in Docker too
+  # ollama:
+  #   image: ollama/ollama
+  #   container_name: ollama
+  #   volumes:
+  #     - ollama_data:/root/.ollama
+  #   ports:
+  #     - "11434:11434"
+
+# volumes:
+#   ollama_data:

@@ -4,6 +4,8 @@ import subprocess
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 
+from .web_tools import WebSearch, WebFetch
+
 
 class ToolRegistry:
     """Registry of available tools"""
@@ -11,6 +13,8 @@ class ToolRegistry:
     def __init__(self, workspace_path: str, restrict_to_workspace: bool = True):
         self.workspace_path = Path(workspace_path).resolve()
         self.restrict_to_workspace = restrict_to_workspace
+        self.web_search = WebSearch(max_results=5)
+        self.web_fetch = WebFetch(max_chars=5000)
         self._tools = self._register_tools()
     
     def _register_tools(self) -> Dict[str, Any]:
@@ -20,6 +24,8 @@ class ToolRegistry:
             "write_file": self.write_file,
             "list_dir": self.list_dir,
             "exec": self.exec_command,
+            "web_search": self.web_search_tool,
+            "web_fetch": self.web_fetch_tool,
         }
     
     def _is_path_allowed(self, path: Path) -> bool:
@@ -120,6 +126,14 @@ class ToolRegistry:
         except Exception as e:
             return f"Error executing command: {str(e)}"
     
+    def web_search_tool(self, query: str) -> str:
+        """Search the web for information"""
+        return self.web_search.search_formatted(query)
+    
+    def web_fetch_tool(self, url: str) -> str:
+        """Fetch and extract content from a URL"""
+        return self.web_fetch.fetch_formatted(url)
+    
     def get_tool_definitions(self) -> List[Dict[str, Any]]:
         """Get tool definitions for LLM"""
         return [
@@ -179,6 +193,34 @@ class ToolRegistry:
                             "timeout": {"type": "integer", "description": "Timeout in seconds", "default": 30}
                         },
                         "required": ["command"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "web_search",
+                    "description": "Search the web for current information. Use this when you need up-to-date facts, news, or information not in your training data.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "query": {"type": "string", "description": "The search query"}
+                        },
+                        "required": ["query"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "web_fetch",
+                    "description": "Fetch and extract content from a URL. Use this to read web pages, documentation, or articles.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "url": {"type": "string", "description": "The URL to fetch"}
+                        },
+                        "required": ["url"]
                     }
                 }
             }
